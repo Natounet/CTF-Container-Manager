@@ -1,0 +1,17 @@
+[
+    {"fullname": "CyberPhoenix", "shortname": "cyberphoenix", "exposed_port": 9000},
+    {"fullname": "CryptoMaze", "shortname": "cryptomaze", "exposed_port": 5678},
+    {"fullname": "ChallengeHub", "shortname": "challengehub", "exposed_port": 4000},
+    {"fullname": "NanoSecondsCount", "shortname": "nanoseconds_count", "exposed_port": 9010},
+    {"fullname": "InsecureShell", "shortname": "insecureshell", "exposed_port": 9020},
+    {"fullname": "DocuShield", "shortname": "docushield", "exposed_port": 6000},
+    {"fullname": "DocuShield - Advanced", "shortname": "docushield_adv", "exposed_port": 6001},
+    {"fullname": "PFC Rivertown", "shortname": "pfc_rivertown", "exposed_port": 9030},
+    {"fullname": "Global Bankers", "shortname": "global_bankers", "exposed_port": 9040},
+    {"fullname": "ChainFest", "shortname": "chainfest", "exposed_port": 1448},
+    {"fullname": "QuerySquad - Alpha", "shortname": "querysquad_alpha", "exposed_port": 9050},
+    {"fullname": "QuerySquad - Beta", "shortname": "querysquad_beta", "exposed_port": 9060},
+    {"fullname": "QuerySquad - Introductory", "shortname": "querysquad_intro", "exposed_port": 9070},
+    {"fullname": "QuerySquad - Final Stage", "shortname": "querysquad_final", "exposed_port": 9080},
+    {"fullname": "jump2kernel", "shortname": "jump2kernel", "exposed_port": 9090}
+]
