@@ -110,9 +110,11 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKey []by
 		case "4":
 			fmt.Fprintln(writer, "Starting all containers...")
 			for i := range validChallenges {
-				fmt.Fprintln(writer, "Starting container", i, "-", validChallenges[i].ShortName)
+				fmt.Fprintln(writer, "Starting container", i, "-", validChallenges[i].Shortname)
+				writer.Flush()
 				startContainer(uint(i), validChallenges, status, writer)
-				fmt.Fprintln(writer, "container", i, "-", validChallenges[i].ShortName, " started!")
+				fmt.Fprintln(writer, "container", i, "-", validChallenges[i].Shortname, " started!")
+				writer.Flush()
 			}
 			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Started all containers by %s\n", conn.RemoteAddr().String()))
@@ -121,8 +123,11 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKey []by
 		case "5":
 			fmt.Fprintln(writer, "Stopping all containers...")
 			for i := range validChallenges {
-				fmt.Fprintln(writer, "Stopping container", i, "-", validChallenges[i].ShortName)
+				fmt.Fprintln(writer, "Stopping container", i, "-", validChallenges[i].Shortname)
+				writer.Flush()
 				stopContainer(uint(i), validChallenges, status, writer)
+				fmt.Fprintln(writer, "container", i, "-", validChallenges[i].Shortname, " stopped!")
+				writer.Flush()
 			}
 			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Stopped all containers by %s\n", conn.RemoteAddr().String()))
