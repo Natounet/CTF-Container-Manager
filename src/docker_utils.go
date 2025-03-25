@@ -74,7 +74,7 @@ func startContainer(index uint, challenges []Challenge, status []string, writer 
 
 	cmd := exec.Command("docker", "run", "-p",
 		fmt.Sprintf("%d:%d", challenges[index].Exposed_port, challenges[index].Exposed_port),
-		"--rm", "--name", challenges[index].Shortname,
+		"--rm", "-d", "--name", challenges[index].Shortname,
 		challenges[index].Shortname,
 	)
 	err := cmd.Run()
