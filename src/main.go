@@ -2,14 +2,15 @@ package main
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
-	"net"
+	"io"
 	"os"
 )
 
 func main() {
 	if len(os.Args) < 5 {
-		fmt.Println("Usage: ./dockerLister <secretKeyFile> <challengesFile> <IP> <Port>")
+		fmt.Println("Usage: ./ctf-container-manager <secretKeyFile> <challengesFile> <IP> <Port>")
 		os.Exit(1)
 	}
 
@@ -18,7 +19,12 @@ func main() {
 	ip := os.Args[3]
 	port := os.Args[4]
 
-	writer := bufio.NewWriter(os.Stdout)
+	logFile, err := os.OpenFile("server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	check(err, "Failed to open application log file", true, nil)
+	defer logFile.Close()
+
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+	writer := bufio.NewWriter(multiWriter)
 
 	secretKey, err := os.ReadFile(secretKeyFile)
 	check(err, "Failed to read secret key file", true, writer)
@@ -32,15 +38,23 @@ func main() {
 	listContainers(validChallenges, statusChallenges(validChallenges, writer), writer)
 	writer.Flush()
 
-	listener, err := net.Listen("tcp", ip+":"+port)
-	check(err, "Failed to start TCP server.", true, bufio.NewWriter(os.Stdout))
+	// Générer les certificats TLS
+	cert, err := generateCertificates()
+	check(err, "Failed to generate TLS certificates", true, writer)
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
+	// Écouter avec TLS
+	listener, err := tls.Listen("tcp", ip+":"+port, tlsConfig)
+	check(err, "Failed to start TLS server.", true, writer)
 	defer listener.Close()
 
-	logFile, err := os.OpenFile("server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	check(err, "Failed to open log file", true, writer)
 	defer logFile.Close()
 
-	fmt.Printf("Server listening on %s:%s\n", ip, port)
+	fmt.Printf("Server listening securely on %s:%s\n", ip, port)
 
 	for {
 		conn, err := listener.Accept()
