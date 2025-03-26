@@ -35,7 +35,7 @@ func generateCertificates() (tls.Certificate, error) {
 			Country:      []string{"FR"},
 			Province:     []string{"Bretagne"},
 			Locality:     []string{"Rennes"},
-			Organization: []string{"MyServer"},
+			Organization: []string{"CTF-Container-Manager"},
 			CommonName:   "localhost",
 		},
 		NotBefore:             time.Now(),
