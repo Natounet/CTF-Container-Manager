@@ -1,6 +1,6 @@
 # CTF Container Manager
 
-CTF Container Manager is a lightweight tool designed to streamline the management of Docker-based challenges for Capture The Flag \(CTF\) events. It provides a remote interface for teams hosting challenges to start, stop, and restart containers via a TCP connection using `netcat`.
+CTF Container Manager is a lightweight tool designed to streamline the management of Docker-based challenges for Capture The Flag \(CTF\) events. It provides a remote interface for teams hosting challenges to start, stop, and restart containers via a TCP/TLS connection using `openssl`.
 
 ---
 
@@ -14,6 +14,7 @@ CTF Container Manager is a lightweight tool designed to streamline the managemen
 - **Authentication**: Access with a printable ASCII passphrase stored in `secret.key`.
 - **Status Monitoring**: View the status of all configured containers (running or stopped).
 - **Logging**: Logs all connections and container management actions for auditing purposes.
+- **TLS Encryption**: All network communications are secured using Transport Layer Security (TLS)
 
 ---
 
@@ -40,7 +41,7 @@ go build -o manager
 Run the server with the following command:
 
 ```bash
-./manager <secret.key> <example_challenges.json> <IP> <Port>
+./ctf-container-manager <secret.key> <challenges.json> <IP> <Port>
 ```
 
 - `<secret.key>`: Path to the file containing the secret key for authentication.
@@ -51,7 +52,7 @@ Run the server with the following command:
 Example:
 
 ```bash
-./dockerLister example_secret.key example_challenges.json 127.0.0.1 9000
+./ctf-container-manager example_secret.key example_challenges.json 127.0.0.1 9000
 ```
 
 ![image](https://github.com/user-attachments/assets/36810a20-6d1a-41b8-91df-6b78f3ec2372)
@@ -77,10 +78,10 @@ Challenges are described in a JSON file \(`example_challenges.json`\). Each chal
 
 ### Client Interaction
 
-Clients can connect to the server using `netcat`:
+Clients can connect to the server using `openssl` since the server use TLS:
 
 ```bash
-nc <IP> <Port>
+openssl s_client -connect <IP>:<PORT> -quiet
 ```
 ![image](https://github.com/user-attachments/assets/b8b93b91-db11-4b9c-bfb5-5ada7e154a8b)
 
