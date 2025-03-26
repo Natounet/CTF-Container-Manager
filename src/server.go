@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/subtle"
 	"fmt"
 	"net"
 	"os"
@@ -24,7 +25,7 @@ import (
 //  3. Displays a menu for the client to start, stop, or restart Docker containers.
 //  4. Logs each container management action performed by the client.
 //  5. Handles client disconnection and logs the event.
-func handleConnection(conn net.Conn, validChallenges []Challenge, secretKey []byte, logFile *os.File) {
+func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes []byte, logFile *os.File) {
 	defer conn.Close()
 
 	writer := bufio.NewWriter(conn)
@@ -35,10 +36,14 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKey []by
 	writer.Flush()
 	inputKey, _ := reader.ReadString('\n')
 	inputKey = strings.TrimSpace(inputKey)
+	var inputKeyBytes []byte = []byte(inputKey)
 
-	if inputKey != strings.TrimSpace(string(secretKey)) {
+	// Timing independant comparison to prevent timing attacks
+	if subtle.ConstantTimeCompare(inputKeyBytes, secretKeyBytes) == 0 {
 		fmt.Fprintln(writer, "\033[31mERROR\033[0m: Invalid secret key.")
-		logWriter.WriteString(fmt.Sprintf("Invalid secret key attempt from %s\n", conn.RemoteAddr().String()))
+		logWriter.WriteString(
+			fmt.Sprintf("Invalid secret key attempt from %s\n", conn.RemoteAddr().String()),
+		)
 		writer.Flush()
 		logWriter.Flush()
 		return
