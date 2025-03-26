@@ -36,6 +36,7 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 	writer.Flush()
 	inputKey, _ := reader.ReadString('\n')
 	inputKey = strings.TrimSpace(inputKey)
+	secretKeyBytes = []byte(strings.TrimSpace(string(secretKeyBytes)))
 	var inputKeyBytes []byte = []byte(inputKey)
 
 	// Timing independant comparison to prevent timing attacks
