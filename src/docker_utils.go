@@ -210,7 +210,7 @@ func restartAllContainers(challenges []Challenge, status []string, writer *bufio
 
 		fmt.Fprintln(writer, "Stopping container", i, "-", challenges[i].Shortname)
 		writer.Flush()
-		startContainer(uint(i), challenges, status, writer)
+		restartContainer(uint(i), challenges, status, writer)
 		fmt.Fprintln(writer, "container", i, "-", challenges[i].Shortname, " stopped!")
 		writer.Flush()
 	}
