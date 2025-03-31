@@ -122,7 +122,7 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 			logWriter.WriteString(fmt.Sprintf("Stopped all containers by %s\n", conn.RemoteAddr().String()))
 
 		case "6":
-			fmt.Fprintln(writer, "Stopping all containers...")
+			fmt.Fprintln(writer, "Restarting all running containers...")
 			restartAllContainers(validChallenges, status, writer)
 			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Stopped all containers by %s\n", conn.RemoteAddr().String()))
