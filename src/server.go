@@ -69,6 +69,7 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 		fmt.Fprintln(writer, "3. Restart Container")
 		fmt.Fprintln(writer, "4. Start all containers")
 		fmt.Fprintln(writer, "5. Stop all containers")
+		fmt.Fprintln(writer, "6. Restart all containers")
 		fmt.Fprintln(writer, "0. Exit")
 		fmt.Fprint(writer, "> ")
 		writer.Flush()
@@ -115,26 +116,21 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 			logWriter.Flush()
 		case "4":
 			fmt.Fprintln(writer, "Starting all containers...")
-			for i := range validChallenges {
-				fmt.Fprintln(writer, "Starting container", i, "-", validChallenges[i].Shortname)
-				writer.Flush()
-				startContainer(uint(i), validChallenges, status, writer)
-				fmt.Fprintln(writer, "container", i, "-", validChallenges[i].Shortname, " started!")
-				writer.Flush()
-			}
+			startAllContainers(validChallenges, status, writer)
 			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Started all containers by %s\n", conn.RemoteAddr().String()))
 			writer.Flush()
 			logWriter.Flush()
 		case "5":
 			fmt.Fprintln(writer, "Stopping all containers...")
-			for i := range validChallenges {
-				fmt.Fprintln(writer, "Stopping container", i, "-", validChallenges[i].Shortname)
-				writer.Flush()
-				stopContainer(uint(i), validChallenges, status, writer)
-				fmt.Fprintln(writer, "container", i, "-", validChallenges[i].Shortname, " stopped!")
-				writer.Flush()
-			}
+			stopAllContainers(validChallenges, status, writer)
+			status = statusChallenges(validChallenges, writer)
+			logWriter.WriteString(fmt.Sprintf("Stopped all containers by %s\n", conn.RemoteAddr().String()))
+			writer.Flush()
+			logWriter.Flush()
+		case "6":
+			fmt.Fprintln(writer, "Stopping all containers...")
+			restartAllContainers(validChallenges, status, writer)
 			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Stopped all containers by %s\n", conn.RemoteAddr().String()))
 			writer.Flush()

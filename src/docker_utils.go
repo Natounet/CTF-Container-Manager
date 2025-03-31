@@ -67,6 +67,11 @@ func checkDocker(challenges []Challenge, writer *bufio.Writer) []Challenge {
 // and container name based on the challenge information. If the command fails, an error message is written
 // to the writer.
 func startContainer(index uint, challenges []Challenge, status []string, writer *bufio.Writer) {
+	if !strings.Contains(status[index], "Not Running") {
+		fmt.Fprintf(writer, "\033[33mWARNING\033[0m: %s is already running.\n", challenges[index].Shortname)
+		return
+	}
+
 	if index >= uint(len(challenges)) {
 		fmt.Fprintln(writer, "\033[31mERROR\033[0m: Index out of range.")
 		return
@@ -77,9 +82,12 @@ func startContainer(index uint, challenges []Challenge, status []string, writer 
 		"--rm", "-d", "--name", challenges[index].Shortname,
 		challenges[index].Shortname,
 	)
-	err := cmd.Run()
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Fprintf(writer, "\033[31mERROR\033[0m: %s\n", string(output))
+		check(err, fmt.Sprintf("Failed to start container %s.", challenges[index].Shortname), false, writer)
+	}
 
-	check(err, fmt.Sprintf("Failed to start container %s.", challenges[index].Shortname), false, writer)
 }
 
 // stopContainer stops a Docker container based on the provided index in the challenges slice.
@@ -94,13 +102,18 @@ func startContainer(index uint, challenges []Challenge, status []string, writer 
 // The function uses the "docker container restart" command to restart the specified container.
 // If the command fails, it calls the check function to handle the error.
 func stopContainer(index uint, challenges []Challenge, status []string, writer *bufio.Writer) {
+	if strings.Contains(status[index], "Not Running") {
+		fmt.Fprintf(writer, "\033[33mWARNING\033[0m: %s is not running.\n", challenges[index].Shortname)
+		return
+	}
+
 	if index >= uint(len(challenges)) {
 		fmt.Fprintln(writer, "\033[31mERROR\033[0m: Index out of range.")
 		return
 	}
 
 	cmd := exec.Command("docker", "container", "stop", challenges[index].Shortname)
-	err := cmd.Run()
+	_, err := cmd.Output()
 	check(err, fmt.Sprintf("Failed to stop container %s.", challenges[index].Shortname), false, writer)
 }
 
@@ -116,12 +129,89 @@ func stopContainer(index uint, challenges []Challenge, status []string, writer *
 // The function uses the "docker container restart" command to restart the specified container.
 // If the command fails, it calls the check function to handle the error.
 func restartContainer(index uint, challenges []Challenge, status []string, writer *bufio.Writer) {
+	if strings.Contains(status[index], "Not Running") {
+		return
+	}
+
 	if index >= uint(len(challenges)) {
 		fmt.Fprintln(writer, "\033[31mERROR\033[0m: Index out of range.")
 		return
 	}
 
 	cmd := exec.Command("docker", "container", "restart", challenges[index].Shortname)
-	err := cmd.Run()
+	_, err := cmd.Output()
 	check(err, fmt.Sprintf("Failed to restart container %s.", challenges[index].Shortname), false, writer)
+}
+
+// stopAllContainers stops all running containers from the provided list of challenges.
+// It iterates through the challenges and checks their corresponding status. If a container
+// is not running, it skips stopping that container. Otherwise, it stops the container
+// and logs the process to the provided writer.
+//
+// Parameters:
+//   - challenges: A slice of Challenge objects representing the containers to be managed.
+//   - status: A slice of strings representing the status of each container (e.g., "Running", "Not Running").
+//   - writer: A pointer to a bufio.Writer used for logging the stop process.
+func stopAllContainers(challenges []Challenge, status []string, writer *bufio.Writer) {
+	for i := range challenges {
+		if strings.Contains(status[i], "Not Running") {
+			continue
+		}
+
+		fmt.Fprintln(writer, "Stopping container", i, "-", challenges[i].Shortname)
+		writer.Flush()
+		stopContainer(uint(i), challenges, status, writer)
+		fmt.Fprintln(writer, "container", i, "-", challenges[i].Shortname, " stopped!")
+		writer.Flush()
+	}
+}
+
+// startAllContainers attempts to start all containers in the provided list of challenges
+// that are currently not running. It iterates through the challenges and checks their
+// corresponding status. If a container is marked as "Not Running", it starts the container.
+//
+// Parameters:
+//   - challenges: A slice of Challenge structs representing the containers to be managed.
+//   - status: A slice of strings representing the current status of each container.
+//   - writer: A buffered writer used to log messages about the container operations.
+//
+// The function logs messages to the provided writer indicating the progress of starting
+// each container, including when a container is being started and when the operation is complete.
+func startAllContainers(challenges []Challenge, status []string, writer *bufio.Writer) {
+	for i := range challenges {
+		if !strings.Contains(status[i], "Not Running") {
+			continue
+		}
+
+		fmt.Fprintln(writer, "Stopping container", i, "-", challenges[i].Shortname)
+		writer.Flush()
+		startContainer(uint(i), challenges, status, writer)
+		fmt.Fprintln(writer, "container", i, "-", challenges[i].Shortname, " stopped!")
+		writer.Flush()
+	}
+}
+
+// restartAllContainers restarts all running containers from the provided list of challenges.
+// It iterates through the challenges and checks their corresponding status. If a container
+// is not running, it skips the restart process for that container. Otherwise, it stops and
+// restarts the container.
+//
+// Parameters:
+//   - challenges: A slice of Challenge objects representing the containers to be managed.
+//   - status: A slice of strings representing the status of each container (e.g., "Running", "Not Running").
+//   - writer: A buffered writer used to log messages about the container operations.
+//
+// The function logs the stopping and restarting process for each container using the provided writer.
+func restartAllContainers(challenges []Challenge, status []string, writer *bufio.Writer) {
+	for i := range challenges {
+		if strings.Contains(status[i], "Not Running") {
+			continue
+		}
+
+		fmt.Fprintln(writer, "Stopping container", i, "-", challenges[i].Shortname)
+		writer.Flush()
+		startContainer(uint(i), challenges, status, writer)
+		fmt.Fprintln(writer, "container", i, "-", challenges[i].Shortname, " stopped!")
+		writer.Flush()
+	}
 }
