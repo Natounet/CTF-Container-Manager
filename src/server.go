@@ -76,6 +76,7 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
+		status = statusChallenges(validChallenges, writer)
 
 		switch input {
 		case "1":
@@ -86,10 +87,8 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 				break
 			}
 			startContainer(index, validChallenges, status, writer)
-			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Started container %d by %s\n", index, conn.RemoteAddr().String()))
-			writer.Flush()
-			logWriter.Flush()
+
 		case "2":
 			fmt.Fprint(writer, "Enter the index of the container to stop: ")
 			writer.Flush()
@@ -98,10 +97,8 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 				break
 			}
 			stopContainer(index, validChallenges, status, writer)
-			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Stopped container %d by %s\n", index, conn.RemoteAddr().String()))
-			writer.Flush()
-			logWriter.Flush()
+
 		case "3":
 			fmt.Fprint(writer, "Enter the index of the container to restart: ")
 			writer.Flush()
@@ -110,36 +107,30 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 				break
 			}
 			restartContainer(index, validChallenges, status, writer)
-			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Restarted container %d by %s\n", index, conn.RemoteAddr().String()))
-			writer.Flush()
-			logWriter.Flush()
+
 		case "4":
 			fmt.Fprintln(writer, "Starting all containers...")
 			startAllContainers(validChallenges, status, writer)
 			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Started all containers by %s\n", conn.RemoteAddr().String()))
-			writer.Flush()
-			logWriter.Flush()
+
 		case "5":
 			fmt.Fprintln(writer, "Stopping all containers...")
 			stopAllContainers(validChallenges, status, writer)
 			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Stopped all containers by %s\n", conn.RemoteAddr().String()))
-			writer.Flush()
-			logWriter.Flush()
+
 		case "6":
 			fmt.Fprintln(writer, "Stopping all containers...")
 			restartAllContainers(validChallenges, status, writer)
 			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Stopped all containers by %s\n", conn.RemoteAddr().String()))
-			writer.Flush()
-			logWriter.Flush()
+
 		case "0":
 			fmt.Fprintln(writer, "Goodbye!")
 			logWriter.WriteString(fmt.Sprintf("Connection closed by %s\n", conn.RemoteAddr().String()))
-			writer.Flush()
-			logWriter.Flush()
+
 			return
 		default:
 			fmt.Fprintln(writer, "\033[31mInvalid choice. Please try again.\033[0m")
@@ -148,6 +139,7 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 
 		fmt.Fprintln(writer, "Press Enter to continue...")
 		writer.Flush()
+		logWriter.Flush()
 		reader.ReadString('\n')
 	}
 }
