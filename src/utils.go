@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/subtle"
 	"fmt"
 	"os"
 	"os/exec"
@@ -154,4 +155,19 @@ func statusChallenges(challenges []Challenge, writer *bufio.Writer) []string {
 	}
 
 	return statuses
+}
+
+// isSecretValid compares two byte slices, `input_bytes` and `secret_bytes`,
+// using a constant-time comparison to prevent timing attacks. It returns
+// true if the two slices are equal, and false otherwise.
+//
+// Parameters:
+//   - input_bytes: The first byte slice to compare.
+//   - secret_bytes: The second byte slice to compare.
+//
+// Returns:
+//   - bool: True if the byte slices are equal, false otherwise.
+func isSecretValid(input_bytes []byte, secret_bytes []byte) bool {
+
+	return subtle.ConstantTimeCompare(input_bytes, secret_bytes) == 1
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"crypto/subtle"
 	"fmt"
 	"net"
 	"os"
@@ -40,13 +39,11 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 	var inputKeyBytes []byte = []byte(inputKey)
 
 	// Timing independant comparison to prevent timing attacks
-	if subtle.ConstantTimeCompare(inputKeyBytes, secretKeyBytes) == 0 {
-		fmt.Fprintln(writer, "\033[31mERROR\033[0m: Invalid secret key.")
-		logWriter.WriteString(
-			fmt.Sprintf("Invalid secret key attempt from %s\n", conn.RemoteAddr().String()),
-		)
-		writer.Flush()
+	if !isSecretValid(inputKeyBytes, secretKeyBytes) {
+		fmt.Fprintln(writer, "ERROR: Invalid secret key.")
+		logWriter.WriteString(fmt.Sprintf("Invalid key attempt from %s\n", conn.RemoteAddr().String()))
 		logWriter.Flush()
+		writer.Flush()
 		return
 	}
 
