@@ -50,13 +50,12 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 	logWriter.WriteString(fmt.Sprintf("Successful connection from %s\n", conn.RemoteAddr().String()))
 	logWriter.Flush()
 
-	status := statusChallenges(validChallenges, writer)
-
 	fmt.Fprintln(writer, "Press Enter to access the console")
 	writer.Flush()
 	reader.ReadString('\n')
 
 	for {
+		status := statusChallenges(validChallenges, writer)
 		fmt.Fprint(writer, "\033[H\033[2J") // Clear screen
 		listContainers(validChallenges, status, writer)
 
@@ -73,7 +72,6 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
-		status = statusChallenges(validChallenges, writer)
 
 		switch input {
 		case "1":
@@ -131,7 +129,6 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 			writer.Flush()
 		}
 
-		status = statusChallenges(validChallenges, writer)
 		fmt.Fprintln(writer, "Press Enter to continue...")
 		writer.Flush()
 		logWriter.Flush()
