@@ -109,19 +109,16 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 		case "4":
 			fmt.Fprintln(writer, "Starting all containers...")
 			startAllContainers(validChallenges, status, writer)
-			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Started all containers by %s\n", conn.RemoteAddr().String()))
 
 		case "5":
 			fmt.Fprintln(writer, "Stopping all containers...")
 			stopAllContainers(validChallenges, status, writer)
-			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Stopped all containers by %s\n", conn.RemoteAddr().String()))
 
 		case "6":
 			fmt.Fprintln(writer, "Restarting all running containers...")
 			restartAllContainers(validChallenges, status, writer)
-			status = statusChallenges(validChallenges, writer)
 			logWriter.WriteString(fmt.Sprintf("Stopped all containers by %s\n", conn.RemoteAddr().String()))
 
 		case "0":
@@ -134,6 +131,7 @@ func handleConnection(conn net.Conn, validChallenges []Challenge, secretKeyBytes
 			writer.Flush()
 		}
 
+		status = statusChallenges(validChallenges, writer)
 		fmt.Fprintln(writer, "Press Enter to continue...")
 		writer.Flush()
 		logWriter.Flush()
